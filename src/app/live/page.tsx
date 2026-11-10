@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/client-api';
 import { copyToClipboard } from '@/lib/clipboard';
 import { Header } from '@/components/header';
+import { HomeMotion } from '@/components/home-motion';
 // 播放器（artplayer + hls.js）按需加载：拆出独立 chunk，不占首屏 First Load JS
 import dynamic from 'next/dynamic';
 const LivePlayer = dynamic(() => import('@/components/live-player').then((m) => m.LivePlayer), {
@@ -221,11 +222,44 @@ function LiveContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header showSearch />
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-4">
+      <HomeMotion />
+      <main className="relative isolate flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* 与首页 / 关于页同一套氛围层（fixed + 径向蒙版，不产生硬边矩形） */}
+        <div className="home-atmosphere" aria-hidden>
+          <span className="orb orb-a" />
+          <span className="orb orb-b" />
+          <span className="orb orb-c" />
+        </div>
+        <div className="pointer-glow" aria-hidden />
+
+        <div className="relative z-10">
+        {/* 页眉：与首页同一套排版语言，但压缩高度给播放器让位 */}
+        <section className="mb-7" aria-labelledby="live-title">
+          <div className="flex items-center gap-3 mb-3 fact-item" style={{ animationDelay: '0.04s' }}>
+            <span className="h-px w-8 bg-accent" />
+            <span className="text-xs text-accent">直播 / IPTV</span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3" data-split>
+            <h1
+              id="live-title"
+              className="display text-[clamp(2.5rem,5.5vw,4rem)] leading-[0.95] font-medium text-content"
+            >
+              {'直播频道'.split('').map((ch, i) => (
+                <span key={i} className="char-in" style={{ animationDelay: `${i * 55}ms` }}>
+                  {ch}
+                </span>
+              ))}
+            </h1>
+            <p className="text-sm text-muted max-w-md">
+              解析 M3U 订阅，按分组浏览频道并站内播放 HLS 与 HTTP-FLV。
+            </p>
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
           {/* 主栏：播放器 + 信息条 + 节目单 */}
           <div className="min-w-0">
-            <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            <div className="aspect-video bg-black rounded-2xl overflow-hidden ring-1 ring-line">
               {currentUrl ? (
                 <LivePlayer
                   url={currentUrl}
@@ -235,16 +269,41 @@ function LiveContent() {
                   volumeBoost={volumeBoost}
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-black">
-                  <span className="live-dot" />
-                  <p className="text-white/60 text-sm">
+                <div className="relative w-full h-full flex flex-col items-center justify-center gap-3 px-6 text-center bg-surface-raised">
+                  {/* 空态氛围：顶部一层淡淡的强调色，避免整块纯黑显得像加载失败 */}
+                  <div
+                    className="pointer-events-none absolute inset-0"
+                    aria-hidden
+                    style={{
+                      background:
+                        'radial-gradient(120% 90% at 50% 0%, rgb(var(--c-accent) / 0.12) 0%, transparent 65%)',
+                    }}
+                  />
+                  <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-chip ring-1 ring-line">
+                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.6}
+                        d="M7 3.5l5 4 5-4M3 7.5h18M4.5 7.5h15A1.5 1.5 0 0121 9v9a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18V9a1.5 1.5 0 011.5-1.5z"
+                      />
+                    </svg>
+                  </span>
+                  <p className="relative text-sm font-medium text-content">
+                    {sources.length === 0
+                      ? '还没有可用的直播源'
+                      : playlistsQuery.isLoading
+                        ? '频道列表加载中'
+                        : '选择一个频道开始观看'}
+                  </p>
+                  <p className="relative text-xs text-faint max-w-xs leading-relaxed">
                     {sources.length === 0
                       ? liveEnvSources.length + liveSubscriptions.length > 0
                         ? '所有直播源均已停用，请在设置中勾选启用'
-                        : '请先在设置中添加直播源（M3U 订阅）'
+                        : '请先在设置中添加 M3U 订阅地址'
                       : playlistsQuery.isLoading
-                        ? '频道列表加载中...'
-                        : '从右侧选择一个频道开始观看'}
+                        ? '正在解析订阅中的频道分组'
+                        : '在频道列表中选择，或按 ↑ / ↓ 切换'}
                   </p>
                 </div>
               )}
@@ -252,7 +311,7 @@ function LiveContent() {
 
             {/* 频道信息条 */}
             {currentChannel && (
-              <div className="bg-surface-raised border border-line rounded-lg p-3 mt-3 flex items-center gap-3">
+              <div className="bg-surface-raised border border-line rounded-xl p-3 mt-3 flex items-center gap-3">
                 <div className="w-10 h-10 shrink-0 rounded bg-chip flex items-center justify-center overflow-hidden">
                   {logo && !logoFailed ? (
                     <SmartImage
@@ -270,7 +329,7 @@ function LiveContent() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="live-dot shrink-0" />
-                    <h1 className="text-sm font-semibold text-content truncate">{currentChannel.name}</h1>
+                    <h1 className="display text-sm font-semibold text-content truncate">{currentChannel.name}</h1>
                     {currentChannel.group && (
                       <span className="tag bg-chip text-faint shrink-0 hidden sm:inline-flex">
                         {currentChannel.group}
@@ -388,7 +447,7 @@ function LiveContent() {
 
             {/* 节目单 */}
             {currentChannel && (
-              <section className="bg-surface-raised border border-line rounded-lg p-3 mt-3">
+              <section className="bg-surface-raised border border-line rounded-xl p-3 mt-3">
                 <h2 className="text-sm font-semibold text-content mb-2.5">节目单</h2>
                 <LiveEpgPanel epgUrl={currentChannel.epg} tvgId={currentChannel.tvgId} />
               </section>
@@ -470,6 +529,7 @@ function LiveContent() {
             频道
           </button>
         )}
+        </div>
       </main>
     </div>
   );

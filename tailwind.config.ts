@@ -2,13 +2,34 @@ import type { Config } from 'tailwindcss';
 
 /**
  * 语义化颜色 token：全部通过 CSS 变量驱动，支持亮暗主题切换。
- * 深色主题默认启用，沿用旧版 LibreTV（backup-2025）赛博配色并整体调深一档（#0b101a 页面 / #141c29 面板 / #0d141f 卡片 / #00ccff 霓虹蓝主色）。
+ * 配色由 taste-skill deal 生成：亮色 cool-grey-cobalt（钴蓝）、暗色 blue-black-cornflower（近黑 + 天蓝）。
+ * 字体为 deal 首选 Funnel Display / Funnel Sans + DM Mono，本地托管于 public/fonts。
  */
 const config: Config = {
   darkMode: 'class',
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          'Funnel Sans',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'PingFang SC',
+          'Hiragino Sans GB',
+          'Microsoft YaHei',
+          'sans-serif',
+        ],
+        display: [
+          'Funnel Display',
+          'Funnel Sans',
+          '-apple-system',
+          'PingFang SC',
+          'Microsoft YaHei',
+          'sans-serif',
+        ],
+        mono: ['DM Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      },
       colors: {
         page: 'rgb(var(--c-page) / <alpha-value>)',
         surface: {
@@ -26,7 +47,7 @@ const config: Config = {
           DEFAULT: 'rgb(var(--c-accent) / <alpha-value>)',
           hover: 'rgb(var(--c-accent-hover) / <alpha-value>)',
         },
-        // 语义状态色：随亮/暗主题切换，替代直接使用 red/green/amber 等调色板
+        // 语义状态色：随亮/暗主题切换
         danger: {
           DEFAULT: 'rgb(var(--c-danger) / <alpha-value>)',
           hover: 'rgb(var(--c-danger-hover) / <alpha-value>)',
@@ -35,9 +56,8 @@ const config: Config = {
         warning: 'rgb(var(--c-warning) / <alpha-value>)',
         info: 'rgb(var(--c-info) / <alpha-value>)',
         rating: 'rgb(var(--c-rating) / <alpha-value>)',
-        // accent 实心底上的文字色：亮色=白、暗色=深（霓虹蓝底对白字对比度不足）
+        // accent 实心底上的文字色：亮色=白、暗色=深
         'on-accent': 'rgb(var(--c-on-accent) / <alpha-value>)',
-        // 实心状态底色（配白字），比语义色更深一档保证对比度
         'danger-solid': 'rgb(var(--c-danger-solid) / <alpha-value>)',
         'success-solid': 'rgb(var(--c-success-solid) / <alpha-value>)',
         'warning-solid': 'rgb(var(--c-warning-solid) / <alpha-value>)',

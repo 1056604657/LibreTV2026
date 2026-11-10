@@ -145,11 +145,11 @@ export function AggregatedCard({
   return (
     <div
       ref={inViewRef}
-      className={cn('card', !multi && 'hover:scale-[1.02] hover:shadow-md', multi && expanded && 'ring-1 ring-accent/40')}
+      className={cn('card poster-card', multi && expanded && 'ring-1 ring-accent/40')}
     >
       {/* 不用 h-full：展开面板需要撑高卡片，等高裁切会让面板不可见 */}
       <div
-        className="flex h-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/60"
+        className="flex flex-col h-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/60"
         role="button"
         tabIndex={0}
         aria-expanded={multi ? expanded : undefined}
@@ -162,16 +162,16 @@ export function AggregatedCard({
         }}
       >
         {showImg ? (
-          <div className="relative flex-shrink-0 w-[105px] sm:w-[120px] aspect-[2/3] bg-chip">
+          <div className="relative w-full aspect-[2/3] bg-chip overflow-hidden poster-media">
             <SmartImage
               url={group.pic}
               mode={imageProxyMode}
               customProxy={customImageProxy}
               alt={group.name}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500"
               onExhausted={() => setImgFailed(true)}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
             {multi && (
               <span className="absolute top-1.5 left-1.5 tag bg-black/70 text-accent font-medium">
                 {group.items.length} 源
@@ -179,7 +179,7 @@ export function AggregatedCard({
             )}
           </div>
         ) : (
-          <div className="relative flex-shrink-0 w-[105px] sm:w-[120px] aspect-[2/3] bg-chip flex items-center justify-center">
+          <div className="relative w-full aspect-[2/3] bg-chip flex items-center justify-center poster-media">
             <svg className="w-8 h-8 text-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16m10-16v16M3 6a1 1 0 011-1h1a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6zm4 0a1 1 0 011-1h1a1 1 0 011 1v12a1 1 0 01-1 1h-1a1 1 0 01-1-1V6zm8 0a1 1 0 011-1h1a1 1 0 011 1v12a1 1 0 01-1 1h-1a1 1 0 01-1-1V6zm4 0a1 1 0 011-1h1a1 1 0 011 1v12a1 1 0 01-1 1h-1a1 1 0 01-1-1V6z" />
             </svg>
@@ -191,9 +191,9 @@ export function AggregatedCard({
           </div>
         )}
 
-        <div className="p-2.5 flex flex-col flex-grow min-w-0">
+        <div className="p-3.5 flex flex-col flex-grow min-w-0">
           <div className="flex-grow">
-            <h3 className="font-semibold text-sm text-content mb-1.5 line-clamp-2" title={group.name}>
+            <h3 className="card-title font-semibold text-sm text-content mb-1.5 line-clamp-2" title={group.name}>
               {group.name}
             </h3>
             <div className="flex flex-wrap gap-1 mb-1.5">
@@ -402,7 +402,7 @@ export function DoubanCard({ item, onClick }: { item: { title: string; cover: st
 
   return (
     <div
-      className="card cursor-pointer hover:scale-[1.03] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+      className="card poster-card cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       role="button"
       tabIndex={0}
       onClick={onClick}
@@ -414,14 +414,14 @@ export function DoubanCard({ item, onClick }: { item: { title: string; cover: st
         }
       }}
     >
-      <div className="relative aspect-[2/3] bg-chip">
+      <div className="relative aspect-[2/3] bg-chip overflow-hidden poster-media">
         {item.cover && !imgFailed ? (
           <SmartImage
             url={item.cover}
             mode={imageProxyMode}
             customProxy={customImageProxy}
             alt={item.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500"
             onExhausted={() => setImgFailed(true)}
           />
         ) : (
@@ -438,7 +438,7 @@ export function DoubanCard({ item, onClick }: { item: { title: string; cover: st
         )}
       </div>
       <div className="p-2">
-        <div className="text-xs font-medium text-content truncate" title={item.title}>
+        <div className="card-title text-xs font-medium text-content truncate" title={item.title}>
           {item.title}
         </div>
       </div>

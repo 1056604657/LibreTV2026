@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/client-api';
+import { HomeMotion } from '@/components/home-motion';
 // 播放器（artplayer + hls.js）按需加载：拆出独立 chunk，不占首屏 First Load JS
 const PlayerShell = dynamic(() => import('@/components/player-shell').then((m) => m.PlayerShell), {
   ssr: false,
@@ -276,12 +277,13 @@ function WatchContent() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <HomeMotion />
       <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur border-b border-line">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center gap-1.5 sm:gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-1.5 sm:gap-3">
           <BackButton />
           <HomeButton />
           <div className="min-w-0">
-            <h1 className="text-sm font-medium text-content truncate">{videoTitle}</h1>
+            <h1 className="display text-sm font-medium text-content truncate">{videoTitle}</h1>
             <p className="text-xs text-faint">
               {source.name}
               {episodes.length > 0 && ` · 第 ${currentIndex + 1}/${episodes.length} 集`}
@@ -314,10 +316,36 @@ function WatchContent() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-4">
+      <main className="relative isolate flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* 与首页 / 关于 / 直播同一套氛围层 */}
+        <div className="home-atmosphere" aria-hidden>
+          <span className="orb orb-a" />
+          <span className="orb orb-b" />
+          <span className="orb orb-c" />
+        </div>
+        <div className="pointer-glow" aria-hidden />
+
+        <div className="relative z-10">
+        {/* 页眉：把当前片名抬成页面级标题，与首页 / 直播页同一套语言 */}
+        <section className="mb-6" aria-labelledby="watch-title">
+          <div className="flex items-center gap-3 mb-3 fact-item" style={{ animationDelay: '0.04s' }}>
+            <span className="h-px w-8 bg-accent" />
+            <span className="text-xs text-accent">正在播放</span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2" data-split>
+            <h2 id="watch-title" className="display text-3xl sm:text-4xl font-medium text-content truncate">
+              {videoTitle}
+            </h2>
+            <p className="text-sm text-muted shrink-0">
+              {source.name}
+              {episodes.length > 0 && ` · 第 ${currentIndex + 1}/${episodes.length} 集`}
+            </p>
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
           <div>
-            <div ref={playerFrameRef} className="aspect-video bg-black rounded-lg overflow-hidden">
+            <div ref={playerFrameRef} className="aspect-video bg-black rounded-2xl overflow-hidden ring-1 ring-line">
               {currentUrl ? (
                 <PlayerShell
                   url={currentUrl}
@@ -429,7 +457,7 @@ function WatchContent() {
           </div>
 
           {/* 剧集侧栏 */}
-          <aside className="bg-surface-raised rounded-lg p-3 h-fit">
+          <aside className="bg-surface-raised rounded-xl p-3 h-fit">
             <div className="flex items-center justify-between gap-2 mb-2.5">
               <h2 className="text-sm font-semibold text-content">
                 剧集列表{episodes.length > 0 && `（${episodes.length}）`}
@@ -472,6 +500,7 @@ function WatchContent() {
               快捷键：空格 播放/暂停 · ←/→ 快退/快进 5s · ↑/↓ 音量 · F 全屏 · Alt+←/→ 切换集数
             </p>
           </aside>
+        </div>
         </div>
       </main>
 

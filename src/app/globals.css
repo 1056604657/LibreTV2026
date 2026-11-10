@@ -1,68 +1,106 @@
+/*
+ * LibreTV 设计系统 —— tasteskill 2.5 视觉重构（仅前端视觉层）
+ *
+ * 配色来自 taste-skill deal（software 类）：
+ *   亮色 cool-grey-cobalt       bg #eef0f3 / surface #e2e5ea / ink #0b0c0e / accent #1f2de6
+ *   暗色 blue-black-cornflower  bg #0a0d14 / surface #131824 / ink #e9edf3 / accent #5ab9fc
+ *   （首选 white-mint-tiles 与影视播放场景 / 原品牌冲突，按 skill 规则取下一个）
+ * 字体为 deal 首选 Funnel Display / Funnel Sans + DM Mono，本地托管于 public/fonts。
+ *
+ * 约束：语义 class 名与 Tailwind token 名全部保持原样，src/app/api/** 与 src/lib/** 未改动。
+ */
+
+/* —— 本地字体（latin 子集；中文回落系统字体栈） —— */
+@font-face {
+  font-family: 'Funnel Display';
+  src: url('/fonts/funnel-display-400.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Funnel Sans';
+  src: url('/fonts/funnel-sans-400.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'DM Mono';
+  src: url('/fonts/dm-mono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /*
- * 语义化配色（RGB 三元组，供 Tailwind 以 <alpha-value> 注入透明度）：
- * 深色主题沿用旧版 LibreTV 配色；浅色主题为对应的白底变体。
+ * 语义化配色（RGB 三元组，供 Tailwind 以 <alpha-value> 注入透明度）。
+ * 亮暗两套均来自 deal 结果，保留原有 token 名以免改动任何组件。
  */
 :root {
-  --c-page: 246 247 249;           /* #f6f7f9 */
-  --c-surface: 255 255 255;        /* #ffffff */
+  --c-page: 238 240 243;           /* #eef0f3 cool off-white */
+  --c-surface: 255 255 255;
   --c-surface-raised: 255 255 255;
   --c-card: 255 255 255;
-  --c-chip: 238 240 243;           /* #eef0f3 */
-  --c-hover: 233 236 240;          /* #e9ecf0 */
-  --c-line: 224 227 232;           /* #e0e3e8 */
-  --c-content: 26 26 26;           /* #1a1a1a */
-  --c-muted: 95 99 104;            /* #5f6368 */
-  --c-faint: 107 114 128;          /* #6b7280（原 #8a8f98 对白底仅 3.2:1，加深后达到 AA 4.5:1） */
-  --c-accent: 37 99 235;           /* blue-600 */
-  --c-accent-hover: 29 78 216;     /* blue-700 */
-  --c-on-accent: 255 255 255;      /* accent 实心底上的文字色 */
-  /* 语义状态色（亮色主题取偏深值，保证浅底上的对比度） */
-  --c-danger: 220 38 38;           /* red-600 */
-  --c-danger-hover: 185 28 28;     /* red-700 */
-  --c-success: 22 163 74;          /* green-600 */
-  --c-warning: 217 119 6;          /* amber-600 */
-  --c-info: 37 99 235;             /* blue-600 */
-  --c-rating: 245 158 11;          /* amber-500 */
-  /* 实心状态底色（配白字）：比「文字用」色更深一档，保证白字对比度 ≥ 4.5:1 */
-  --c-danger-solid: 185 28 28;     /* red-700 */
-  --c-success-solid: 21 128 61;    /* green-700 */
-  --c-warning-solid: 180 83 9;     /* amber-700 */
-  --c-info-solid: 29 78 216;       /* blue-700 */
+  --c-chip: 226 229 234;           /* #e2e5ea */
+  --c-hover: 214 218 226;
+  --c-line: 203 209 220;
+  --c-content: 11 12 14;           /* #0b0c0e */
+  --c-muted: 74 82 97;
+  --c-faint: 95 104 120;           /* 白底 ≥ 4.5:1 */
+  --c-accent: 31 45 230;           /* #1f2de6 cobalt */
+  --c-accent-hover: 26 37 196;
+  --c-on-accent: 255 255 255;
+  --c-danger: 220 38 38;
+  --c-danger-hover: 185 28 28;
+  --c-success: 22 163 74;
+  --c-warning: 217 119 6;
+  --c-info: 37 99 235;
+  --c-rating: 245 158 11;
+  --c-danger-solid: 185 28 28;
+  --c-success-solid: 21 128 61;
+  --c-warning-solid: 180 83 9;
+  --c-info-solid: 29 78 216;
   color-scheme: light;
 }
 
 .dark {
-  /* 旧版 LibreTV（backup-2025）赛博影视主题（整体调深一档）：深蓝黑底 + 霓虹蓝/粉点缀 */
-  --c-page: 11 16 26;              /* #0b101a 深蓝黑页面底色 */
-  --c-surface: 20 28 41;           /* #141c29 弹窗/抽屉底色 */
-  --c-surface-raised: 20 28 41;
-  --c-card: 13 20 31;              /* #0d141f 卡片底色 */
-  --c-chip: 22 32 46;              /* #16202e 卡片/输入框底色 */
-  --c-hover: 29 42 61;             /* #1d2a3d 悬停态（chip 提亮） */
-  --c-line: 34 48 69;              /* #223045 边框（近似旧版 rgba(0,204,255,.15) 观感） */
-  --c-content: 230 242 255;        /* #e6f2ff 蓝白主文本（--text-color） */
-  --c-muted: 133 153 178;          /* #8599b2 次级文本（--text-muted） */
-  --c-faint: 122 140 166;          /* #7a8ca6 三级文本（原 #6b7f99 在抽屉底色 #141c29 上仅 4.17:1，12px 小字不达标；提亮后 4.99:1） */
-  --c-accent: 0 184 230;           /* #00b8e6 霓虹蓝主色（--primary-color 调深一档） */
-  --c-accent-hover: 51 214 255;    /* #33d6ff 霓虹蓝浅变体（--primary-light） */
-  /* 霓虹蓝底亮度过高（对白字仅 2.35:1），暗色下实心底改用深色文字 */
-  --c-on-accent: 8 19 31;
-  /* 语义状态色（暗色主题取中等明度值，保证深蓝黑底上的对比度） */
-  --c-danger: 239 68 68;           /* red-500 */
-  --c-danger-hover: 248 113 113;   /* red-400 */
-  --c-success: 34 197 94;          /* green-500 */
-  --c-warning: 245 158 11;         /* amber-500 */
-  --c-info: 59 130 246;            /* blue-500 */
-  --c-rating: 251 191 36;          /* amber-400 */
-  /* 实心状态底色（配白字）：与亮色一致取深档，避免琥珀/绿色底白字对比度不足 */
-  --c-danger-solid: 185 28 28;     /* red-700 */
-  --c-success-solid: 21 128 61;    /* green-700 */
-  --c-warning-solid: 180 83 9;     /* amber-700 */
-  --c-info-solid: 29 78 216;       /* blue-700 */
+  --c-page: 10 13 20;              /* #0a0d14 near-black */
+  --c-surface: 19 24 36;           /* #131824 */
+  --c-surface-raised: 27 34 51;
+  --c-card: 16 21 31;
+  --c-chip: 27 34 48;
+  --c-hover: 36 48 74;
+  --c-line: 42 53 74;
+  --c-content: 233 237 243;        /* #e9edf3 */
+  --c-muted: 154 167 187;
+  --c-faint: 139 152 173;          /* 深底 ≥ 4.5:1 */
+  --c-accent: 90 185 252;          /* #5ab9fc cornflower */
+  --c-accent-hover: 138 208 255;
+  --c-on-accent: 8 19 31;          /* 亮蓝底用深字 */
+  --c-danger: 239 68 68;
+  --c-danger-hover: 248 113 113;
+  --c-success: 34 197 94;
+  --c-warning: 245 158 11;
+  --c-info: 59 130 246;
+  --c-rating: 251 191 36;
+  --c-danger-solid: 185 28 28;
+  --c-success-solid: 21 128 61;
+  --c-warning-solid: 180 83 9;
+  --c-info-solid: 29 78 216;
   color-scheme: dark;
 }
 
@@ -71,43 +109,90 @@ body {
   @apply bg-page text-content antialiased;
 }
 
-/* 暗色主题：模拟旧版 .page-bg 的深蓝黑纵向渐变 */
 .dark body {
-  background: linear-gradient(180deg, rgb(11 16 26), rgb(20 28 41)) fixed;
+  background: linear-gradient(180deg, rgb(10 13 20), rgb(19 24 36)) fixed;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC',
+  font-family: 'Funnel Sans', -apple-system, BlinkMacSystemFont, 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Funnel Display', 'Funnel Sans', -apple-system, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* 排版工具：首屏标签与展示级标题 */
+.eyebrow {
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.display {
+  font-family: 'Funnel Display', 'Funnel Sans', -apple-system, 'PingFang SC', sans-serif;
+  letter-spacing: -0.045em;
+}
+
+/* 一次性入场（不做 scroll reveal：符合 skill 的「只在载入时进入一次」） */
+[data-enter] {
+  animation: enter-once 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+[data-enter-delay='1'] { animation-delay: 0.09s; }
+[data-enter-delay='2'] { animation-delay: 0.18s; }
+[data-enter-delay='3'] { animation-delay: 0.27s; }
+@keyframes enter-once {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }
 
 @layer components {
   .card {
-    @apply bg-card border border-line rounded-lg overflow-hidden transition-all duration-200;
+    @apply bg-card border border-line rounded-xl overflow-hidden;
+    transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.3, 1),
+      box-shadow 0.24s ease, border-color 0.24s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgb(var(--c-accent) / 0.38);
+    box-shadow: 0 10px 28px -12px rgb(var(--c-content) / 0.28);
+  }
+  .card img {
+    transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .card:hover img {
+    transform: scale(1.03);
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-[transform,background-color,border-color,color,box-shadow] duration-200 disabled:opacity-40 disabled:cursor-not-allowed;
     /* 统一焦点环：键盘用户可见，与 .input 同一规格 */
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-page;
   }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0) scale(0.985); }
   .btn-primary {
-    @apply btn bg-accent text-on-accent hover:bg-accent-hover;
+    @apply btn bg-accent text-on-accent hover:bg-accent-hover shadow-sm hover:shadow-md;
   }
   .btn-ghost {
     @apply btn bg-chip text-muted hover:bg-hover hover:text-content border border-line;
   }
   .input {
-    @apply bg-chip border border-line rounded-md px-3 py-2 text-sm text-content placeholder:text-faint;
+    @apply bg-chip border border-line rounded-lg px-3 py-2 text-sm text-content placeholder:text-faint;
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:border-accent;
   }
   .tag {
     @apply inline-flex items-center text-xs px-1.5 py-0.5 rounded-full;
   }
-  /* 小尺寸按钮：定义在 .btn-* 之后，确保尺寸覆盖生效（与 .btn-primary / .btn-ghost 组合使用） */
+  /* 小尺寸按钮：定义在 .btn-* 之后，确保尺寸覆盖生效 */
   .btn-sm {
     @apply btn px-2.5 py-1 text-xs;
   }
-  /* 胶囊控件（筛选、分类标签）：统一内边距与圆角 */
+  /* 胶囊控件（筛选、分类标签） */
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] transition-colors;
   }
@@ -129,11 +214,10 @@ body {
 .episode-active {
   background: rgb(var(--c-accent)) !important;
   border-color: rgb(var(--c-accent)) !important;
-  /* 暗色下霓虹蓝底对白字对比度不足，统一用 on-accent（亮色白 / 暗色深） */
   color: rgb(var(--c-on-accent)) !important;
 }
 
-/* 品牌渐变字（沿用旧版 LibreTV 的霓虹蓝→霓虹粉） */
+/* 品牌渐变字（保留供其它组件使用，首页首屏已改用实色标题） */
 .brand-gradient {
   background: linear-gradient(to right, #00ccff, #ff3c78);
   -webkit-background-clip: text;
@@ -142,7 +226,7 @@ body {
   color: transparent;
 }
 
-/* LIVE 呼吸红点（直播页标识） */
+/* LIVE 呼吸红点 */
 .live-dot {
   width: 8px;
   height: 8px;
@@ -155,14 +239,22 @@ body {
   50% { opacity: 0.55; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0); }
 }
 
+/* 减少动效偏好：一切归位，且不留隐藏内容 */
+@media (prefers-reduced-motion: reduce) {
+  [data-enter],
+  [data-enter-delay] { animation: none !important; }
+  .card,
+  .card img,
+  .btn { transition: none !important; }
+  .card:hover,
+  .btn:hover,
+  .btn:active,
+  .card:hover img { transform: none !important; }
+}
+
 /*
- * iOS Safari 在聚焦字号小于 16px 的输入框时会强制放大整页，
- * 且放大后不会自动缩回（页面表现为"错位"）。
- * 表单控件在触屏窄屏统一提到 16px；桌面端保持原字号。
- *
- * 断点取 640px 而不是 767px：本项目其余响应式都以 Tailwind 的 sm(640px) 为界，
- * 用 767 会让 640–767 这段（大手机横屏、小平板竖屏）落到「桌面版式 + 手机字号」的
- * 混搭区间。640px 与 Tailwind 的 max-sm 变体取值一致，等价于 max-sm。
+ * iOS Safari 在聚焦字号小于 16px 的输入框时会强制放大整页且不会缩回。
+ * 断点取 640px，与项目其余响应式（Tailwind sm）保持一致。
  */
 @media (max-width: 640px) and (pointer: coarse) {
   input,
@@ -172,10 +264,7 @@ body {
   }
 }
 
-/*
- * 触屏设备：放大可点区域，避免 12px 小字按钮/图标在手机上难以点中。
- * 只作用在粗指针（手指）环境，不影响桌面鼠标操作精度。
- */
+/* 触屏设备放大可点区域 */
 @media (pointer: coarse) {
   .btn-sm {
     @apply min-h-[36px] px-3;
@@ -185,16 +274,8 @@ body {
   }
 }
 
-/*
- * 播放器控制条在窄屏没有多余横向空间：
- * 上/下集控件会把右侧的「网页全屏」「全屏」挤出可视区（手机上表现为图标显示不全）。
- * 只在窄于 640px 时收起这两个控件——手机横屏、平板仍有空间，可以保留。
- * 切集在任何情况下都还能用播放器下方的按钮。
- */
+/* 播放器控制条窄屏收起次要控件（原逻辑保留） */
 @media (max-width: 640px) {
-  /* 竖屏空间只够放「播放 + 时间 + 设置 + 网页全屏 + 全屏」：
-     音量交给系统按键，截图与画中画在手机上很少用，一并收起，
-     保证最右侧的全屏按钮完整可见 */
   .art-control-prev-episode,
   .art-control-next-episode,
   .art-control-volume,
@@ -202,14 +283,10 @@ body {
   .art-control-pip {
     display: none !important;
   }
-
-  /* 00:04 / 01:26:30 这种长文本占宽最多，缩字号再收紧内边距 */
   .art-control-time {
     font-size: 11px;
     padding: 0 2px;
   }
-
-  /* 默认每个图标 46px，竖屏下收到 40px —— 省出的宽度正好让最后一个全屏按钮不贴边 */
   .art-control-playAndPause,
   .art-control-setting,
   .art-control-fullscreenWeb,
@@ -217,4 +294,253 @@ body {
     width: 40px !important;
     min-width: 40px !important;
   }
+}
+
+/* ============================================================
+   首页动效层（视觉重构 v2）
+   - 全部为 CSS / 轻量观察器，不触碰任何业务逻辑
+   - prefers-reduced-motion 下整体归位
+   ============================================================ */
+
+/* —— 首屏氛围：细网格 + 三枚缓慢漂移光斑 —— */
+.home-atmosphere {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  /* 整层径向淡出：避免出现「内容宽度内一块矩形、外面纯色」的硬边 */
+  -webkit-mask-image: radial-gradient(130% 100% at 50% 6%, #000 0%, #000 40%, transparent 88%);
+  mask-image: radial-gradient(130% 100% at 50% 6%, #000 0%, #000 40%, transparent 88%);
+}
+.home-atmosphere::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgb(var(--c-line) / 0.42) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--c-line) / 0.42) 1px, transparent 1px);
+  background-size: 76px 76px;
+  -webkit-mask-image: radial-gradient(72% 62% at 50% 24%, #000 0%, transparent 80%);
+  mask-image: radial-gradient(72% 62% at 50% 24%, #000 0%, transparent 80%);
+  opacity: 0.55;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  will-change: transform;
+  opacity: 0.36;
+}
+.dark .orb { opacity: 0.55; }
+.orb-a {
+  width: 480px;
+  height: 480px;
+  left: -10%;
+  top: -140px;
+  background: rgb(var(--c-accent) / 0.22);
+  animation: drift-a 19s ease-in-out infinite alternate;
+}
+.orb-b {
+  width: 400px;
+  height: 400px;
+  right: -8%;
+  top: 60px;
+  background: rgb(var(--c-accent) / 0.14);
+  animation: drift-b 24s ease-in-out infinite alternate;
+}
+.orb-c {
+  width: 320px;
+  height: 320px;
+  left: 44%;
+  top: 340px;
+  background: rgb(var(--c-content) / 0.05);
+  animation: drift-a 31s ease-in-out infinite alternate-reverse;
+}
+@keyframes drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(130px, 70px, 0) scale(1.16); }
+}
+@keyframes drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to { transform: translate3d(-150px, -60px, 0) scale(0.9); }
+}
+
+/* —— 指针跟随光晕（坐标由 HomeMotion 写入 --mx / --my） —— */
+.pointer-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    380px 380px at var(--mx, 50%) var(--my, 28%),
+    rgb(var(--c-accent) / 0.11),
+    transparent 72%
+  );
+  transition: background 0.12s linear;
+}
+
+/* —— 逐字揭示（首屏大标题） —— */
+.char-in {
+  display: inline-block;
+  animation: char-rise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes char-rise {
+  from { opacity: 0; transform: translateY(46px) rotate(4deg); }
+  to { opacity: 1; transform: none; }
+}
+
+/* —— 分行 / 分块揭示 —— */
+[data-split] > * {
+  animation: rise-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+[data-split] > *:nth-child(1) { animation-delay: 0.18s; }
+[data-split] > *:nth-child(2) { animation-delay: 0.28s; }
+[data-split] > *:nth-child(3) { animation-delay: 0.38s; }
+[data-split] > *:nth-child(4) { animation-delay: 0.48s; }
+[data-split] > *:nth-child(5) { animation-delay: 0.58s; }
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* —— 搜索框聚焦流光 —— */
+.search-shell { position: relative; }
+.search-shell::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(100deg, transparent 20%, rgb(var(--c-accent) / 0.95) 50%, transparent 80%);
+  background-size: 220% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.search-shell:focus-within::after {
+  opacity: 1;
+  animation: sweep 2.4s linear infinite;
+}
+@keyframes sweep {
+  from { background-position: 220% 0; }
+  to { background-position: -220% 0; }
+}
+.search-shell:focus-within {
+  box-shadow: 0 0 0 4px rgb(var(--c-accent) / 0.1), 0 18px 44px -24px rgb(var(--c-accent) / 0.55);
+}
+
+/* —— 交错入场（卡片网格） —— */
+.stagger > * {
+  animation: card-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.stagger > *:nth-child(5) { animation-delay: 0.22s; }
+.stagger > *:nth-child(6) { animation-delay: 0.27s; }
+.stagger > *:nth-child(7) { animation-delay: 0.32s; }
+.stagger > *:nth-child(8) { animation-delay: 0.37s; }
+.stagger > *:nth-child(9) { animation-delay: 0.42s; }
+.stagger > *:nth-child(10) { animation-delay: 0.47s; }
+.stagger > *:nth-child(n + 11) { animation-delay: 0.52s; }
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* —— 滚动显现（IntersectionObserver 加 .in-view） —— */
+.motion-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+}
+.motion-ready [data-reveal].in-view {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--reveal-delay, 0) * 1ms);
+}
+
+/* —— 海报卡：hover 分层位移 —— */
+.poster-card {
+  transform: translateZ(0);
+}
+.poster-card:hover {
+  transform: translateY(-7px);
+  border-color: rgb(var(--c-accent) / 0.55);
+  box-shadow: 0 22px 48px -20px rgb(var(--c-accent) / 0.38), 0 8px 20px -12px rgb(var(--c-content) / 0.3);
+}
+.poster-card:hover img {
+  transform: scale(1.08);
+}
+.poster-card .card-title {
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+.poster-card:hover .card-title {
+  color: rgb(var(--c-accent));
+  transform: translateY(-2px);
+}
+.poster-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgb(var(--c-page) / 0.18) 100%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.poster-card:hover .poster-media::after { opacity: 1; }
+
+/* —— 链接下划线绘制 —— */
+.link-underline { position: relative; }
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.link-underline:hover::after { transform: scaleX(1); }
+
+/* —— 事实条数字与标签 —— */
+.fact-item {
+  animation: fact-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes fact-in {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* —— 降低动效偏好：一切静止且内容全部可见 —— */
+@media (prefers-reduced-motion: reduce) {
+  .orb,
+  .char-in,
+  [data-split] > *,
+  .stagger > *,
+  .fact-item,
+  .search-shell:focus-within::after {
+    animation: none !important;
+  }
+  .motion-ready [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .pointer-glow { display: none; }
+  .poster-card:hover,
+  .poster-card:hover img,
+  .poster-card:hover .card-title { transform: none !important; }
+  .search-shell:focus-within { box-shadow: none !important; }
 }

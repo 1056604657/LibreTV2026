@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/header';
@@ -16,6 +17,7 @@ import { useToast } from '@/components/toast';
 import { EmptyState } from '@/components/states';
 import { Icon } from '@/components/icon';
 import { SiteFooter } from '@/components/site-footer';
+import { HomeMotion } from '@/components/home-motion';
 
 /**
  * 首页：搜索（URL ?s= 驱动，可后退/分享）+ 豆瓣推荐。
@@ -166,30 +168,60 @@ function HomeContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      <HomeMotion />
 
-      <main className="relative flex-1 max-w-6xl w-full mx-auto px-4 py-6">
-        {/* 首屏氛围渐变 */}
-        {!urlQuery && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-[420px] -z-10"
-            style={{
-              background:
-                'radial-gradient(60% 60% at 50% 0%, rgba(35,173,229,0.10) 0%, rgba(35,173,229,0.03) 45%, transparent 75%)',
-            }}
-          />
-        )}
+      <main className="relative isolate flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pb-16">
+        {/* 动态氛围：漂移光斑 + 细网格 + 指针跟随光晕（纯装饰） */}
+        <div className="home-atmosphere" aria-hidden>
+          <span className="orb orb-a" />
+          <span className="orb orb-b" />
+          <span className="orb orb-c" />
+        </div>
+        <div className="pointer-glow" aria-hidden />
 
-        {/* 搜索区 */}
-        <section className={cn('flex flex-col items-center', urlQuery ? 'mb-6' : 'mt-8 mb-8')}>
+        <div className="relative z-10">
+          {/* 首屏：左对齐超大排版，逐字揭示 */}
           {!urlQuery && (
-            <header className="text-center mb-6">
-              <h1 className="text-4xl sm:text-5xl font-bold brand-gradient">LibreTV</h1>
-            </header>
+            <section className="pt-14 sm:pt-20 pb-10" aria-labelledby="home-title">
+              <div className="flex items-center gap-3 mb-6 fact-item" style={{ animationDelay: '0.04s' }}>
+                <span className="h-px w-8 bg-accent" />
+                <span className="text-xs text-accent">视频聚合搜索</span>
+              </div>
+              <h1
+                id="home-title"
+                className="display text-[clamp(3.5rem,11vw,8.5rem)] leading-[0.88] font-medium text-content"
+              >
+                {'LibreTV'.split('').map((ch, i) => (
+                  <span key={i} className="char-in" style={{ animationDelay: `${i * 65}ms` }}>
+                    {ch}
+                  </span>
+                ))}
+              </h1>
+              <div className="mt-8 flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-16" data-split>
+                <p className="max-w-lg text-base sm:text-lg text-muted leading-relaxed">
+                  一次搜索，比对多个采集站的结果。本站不存储任何视频文件。
+                </p>
+                <div className="flex flex-wrap gap-x-7 gap-y-2 pb-1">
+                  {['聚合搜索', 'HLS 播放', '本地进度'].map((fact, i) => (
+                    <span
+                      key={fact}
+                      className="fact-item text-xs text-faint"
+                      style={{ animationDelay: `${0.3 + i * 0.12}s` }}
+                    >
+                      <span className="text-accent mr-1.5">/</span>
+                      {fact}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </section>
           )}
           {urlQuery && <h1 className="sr-only">LibreTV 视频搜索</h1>}
-          {/* 定位容器比胶囊宽一圈：浮层按它的宽度对齐，接缝处不会与胶囊边框错位 1px */}
-          <div ref={searchHistory.containerRef} className="relative w-full max-w-2xl">
+
+          {/* 搜索区：与标题同一条左边缘，聚焦时流光 */}
+          <section className={cn(urlQuery ? 'pt-10 pb-9' : 'pb-14')} data-enter data-enter-delay="2">
+            {/* 定位容器比胶囊宽一圈：浮层按它的宽度对齐，接缝处不会与胶囊边框错位 1px */}
+            <div ref={searchHistory.containerRef} className="relative w-full max-w-3xl">
             <form
               className="w-full"
               onSubmit={(e) => {
@@ -204,7 +236,7 @@ function HomeContent() {
                   // 12px 圆角矩形（非胶囊）：收起态与展开态共用同一组上圆角，
                   // 展开时输入框这部分形状完全不发生变化，上下圆角也与下拉保持一致；
                   // 右侧与上下不留内边距，由搜索按钮拉伸填满、与搜索框边缘贴合
-                  'flex items-stretch min-h-12 pl-4 border',
+                  'flex items-stretch min-h-14 pl-5 border search-shell',
                   'transition-[background-color,border-color,border-radius] duration-200',
                   searchHistory.visible
                     ? // 展开时：外框（含上圆角）沿用输入框的聚焦样式不变，只把底边改为内部分隔线，
@@ -215,7 +247,7 @@ function HomeContent() {
               >
                 <input
                   ref={inputRef}
-                  className="flex-1 min-w-0 pr-2 bg-transparent text-sm text-content placeholder:text-faint focus:outline-none"
+                  className="flex-1 min-w-0 pr-2 bg-transparent text-base text-content placeholder:text-faint focus:outline-none"
                   placeholder="输入影片名称..."
                   value={input}
                   maxLength={100}
@@ -255,7 +287,7 @@ function HomeContent() {
                 <button
                   type="submit"
                   className={cn(
-                    'btn-primary shrink-0 px-4 font-medium transition-[background-color,filter] active:brightness-90',
+                    'btn-primary shrink-0 px-5 font-medium transition-[background-color,filter] active:brightness-90',
                     '!rounded-l-none',
                     searchHistory.visible ? '!rounded-tr-xl !rounded-br-none' : '!rounded-r-xl'
                   )}
@@ -278,30 +310,41 @@ function HomeContent() {
               />
             )}
           </div>
+          {!urlQuery && (
+            <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-2" data-split>
+              <Link href="/live" className="link-underline text-sm text-muted hover:text-content">
+                直播频道
+              </Link>
+              <Link href="/about" className="link-underline text-sm text-muted hover:text-content">
+                关于本站
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* 搜索结果 */}
         {urlQuery && (
-          <section aria-label="搜索结果" className="mb-10">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm text-muted">
-                “<span className="text-content">{urlQuery}</span>” 的搜索结果
+          <section aria-label="搜索结果" className="mb-12" data-reveal>
+            <div className="mb-5">
+              <h2 className="display text-xl sm:text-2xl font-medium text-content">
+                “{urlQuery}” 的搜索结果
+              </h2>
+              <p className="mt-1.5 text-xs text-faint">
                 {isSearching ? (
-                  <span className="text-faint">
-                    （已就绪 {streamedOutcomes.length}/{selectedSources.length} 个源…）
-                  </span>
+                  <>已就绪 {streamedOutcomes.length}/{selectedSources.length} 个源…</>
                 ) : (
                   searchQuery.data && (
-                    <span className="text-faint">
-                      （{groups.length} 部影片 · {list.length} 条结果{failures.length > 0 && `，${failures.length} 个源失败`}）
-                    </span>
+                    <>
+                      {groups.length} 部影片 · {list.length} 条结果
+                      {failures.length > 0 && `，${failures.length} 个源失败`}
+                    </>
                   )
                 )}
-              </h2>
+              </p>
             </div>
 
             {failures.length > 0 && (
-              <div className="mb-3 text-xs bg-chip rounded-lg px-3 py-2 flex flex-wrap gap-x-3 gap-y-1">
+              <div className="mb-3 text-xs bg-chip rounded-xl px-4 py-2.5 flex flex-wrap gap-x-3 gap-y-1">
                 <span className="text-faint">{isSearching ? '以下源暂时无响应：' : '部分点播源请求失败：'}</span>
                 {failures.map((f) => (
                   <span key={f.sourceKey} className={f.timedOut ? 'text-warning' : 'text-faint'}>
@@ -313,14 +356,14 @@ function HomeContent() {
             )}
 
             {disabledSources.length > 0 && (
-              <div className="mb-3 text-xs text-faint bg-chip rounded-lg px-3 py-2">
+              <div className="mb-3 text-xs text-faint bg-chip rounded-xl px-4 py-2.5">
                 {disabledSources.length} 个源因连续超时/失败已暂停参与搜索（临时停用的到期自动恢复，
                 长期停用的需在设置中手动恢复）：{disabledSources.map((key) => sourceName(key)).join('、')}
               </div>
             )}
 
             {offSubscriptionSources.length > 0 && (
-              <div className="mb-3 text-xs text-faint bg-chip rounded-lg px-3 py-2">
+              <div className="mb-3 text-xs text-faint bg-chip rounded-xl px-4 py-2.5">
                 {offSubscriptionSources.length} 个源所属的订阅已停用，未参与本次搜索（在设置 → 数据源订阅中可重新启用）：
                 {offSubscriptionSources.map((key) => sourceName(key)).join('、')}
               </div>
@@ -330,7 +373,7 @@ function HomeContent() {
               <NoSourceGuide hasSources={customAPIs.length > 0 || envSources.length > 0} />
             ) : list.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5 items-start stagger">
                   {visibleGroups.map((group) => (
                     <AggregatedCard
                       key={group.key}
@@ -366,13 +409,16 @@ function HomeContent() {
 
         {/* 首页推荐（有搜索时隐藏） */}
         {!urlQuery && (
-          <RecommendSection
-            onPick={(title) => {
-              setInput(title);
-              runSearch(title);
-            }}
-          />
+          <div data-reveal>
+            <RecommendSection
+              onPick={(title) => {
+                setInput(title);
+                runSearch(title);
+              }}
+            />
+          </div>
         )}
+        </div>
       </main>
 
       <SiteFooter />
@@ -384,7 +430,7 @@ function HomeContent() {
 
 function ResultsSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5 stagger">
       {Array.from({ length: 6 }).map((_, i) => (
         // 结构对齐真实结果卡（左侧缩略图 + 右侧文字块），避免占位与真实卡片形状不符
         <div key={i} className="card flex h-28 overflow-hidden">
@@ -404,7 +450,7 @@ function ResultsSkeleton() {
 function NoSourceGuide({ hasSources = false }: { hasSources?: boolean }) {
   return (
     <div className="border border-dashed border-line rounded-xl p-10 text-center max-w-lg mx-auto">
-      <h3 className="text-content font-medium mb-2">{hasSources ? '尚未勾选点播源' : '先添加一个点播源'}</h3>
+      <h3 className="display text-lg text-content font-medium mb-2">{hasSources ? '尚未勾选点播源' : '先添加一个点播源'}</h3>
       <p className="text-sm text-muted leading-relaxed">
         {hasSources ? (
           <>点击右上角「设置」，勾选要参与搜索的点播源后重新搜索。</>
